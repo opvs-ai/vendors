@@ -11,14 +11,12 @@ Both are scoped to your vendor. Neither gives you admin power over anyone else's
 
 ## Pages
 
-- [partner-keys.md](partner-keys.md) — what a partner key is, how to mint one, where to store it
-- [publishing-tokens.md](publishing-tokens.md) — the env vars and headers the CLI expects at publish time
-- [credential-rotation.md](credential-rotation.md) — rotating both keys and certs when they leak or expire
+| Page | What it covers |
+|---|---|
+| [partner-keys.md](partner-keys.md) | What a partner key is, how OPVS mints one for you, where to store it, what "scoped to vendor X" means in practice |
+| [publishing-tokens.md](publishing-tokens.md) | The env vars and headers the CLI reads at publish time, and the separate npm/Verdaccio token layer for per-vendor publish accounts |
+| [credential-rotation.md](credential-rotation.md) | 90-day rotation cadence, the dual-trust window for cert rotation, and the emergency path when a credential leaks |
 
 ## What's next
 
 Authenticated and ready to build. Head to [03-authoring/](../03-authoring/) to learn what a skill actually looks like on disk.
-
----
-
-> Pages in this section are filled in by content session **V-C**.
