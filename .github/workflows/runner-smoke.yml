@@ -1,0 +1,31 @@
+name: Self-Hosted Runner Smoke Test
+
+# Manual-only trigger. Lives here purely to prove the self-hosted runner pool works.
+# Safe to delete once we're satisfied the runners pick up jobs correctly.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: smoke — runs on opvs-ai self-hosted runner
+    runs-on: [self-hosted, opvs-ai, linux]
+    steps:
+      - name: Where am I running?
+        run: |
+          echo "Runner name:   $RUNNER_NAME"
+          echo "Runner OS:     $RUNNER_OS"
+          echo "Runner arch:   $RUNNER_ARCH"
+          echo "Workspace:     $GITHUB_WORKSPACE"
+          echo "Host hostname: $(hostname)"
+          echo "Whoami:        $(whoami)"
+          echo "Date:          $(date)"
+          echo "Disk free:     $(df -h /_work 2>/dev/null | tail -1)"
+
+      - name: Can I see Docker (via socket mount)?
+        run: |
+          docker --version
+          docker ps --format 'table {% raw %}{{.Names}}{% endraw %}\t{% raw %}{{.Status}}{% endraw %}' | head -5
+
+      - name: Done
+        run: echo "✓ Self-hosted runner smoke test passed"
