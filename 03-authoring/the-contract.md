@@ -82,3 +82,5 @@ Most vendors decide that following the contract is cheap and worth it. The four 
 ## What's next
 
 Once your `schema.yaml` matches the contract, validate locally before you submit — see [validation-preflight.md](validation-preflight.md).
+
+For the practical "how do I ship both the contract block and the 4-layer skill directories in one signed package" walkthrough, jump to [`04-publishing/4-layer-and-envelope.md`](../04-publishing/4-layer-and-envelope.md).
