@@ -87,6 +87,70 @@ figure out what's next). You want both.
 
 ---
 
+## Getting the CLI
+
+The factory CLI is `@opvs-ai/skills`. OPVS-internal projects install it from
+the private Verdaccio registry (`https://npm.opvs.ai`). External vendors
+(SpiderIQ, Di-Atomic, future) install the **source-form public mirror** from
+opvsHUB and build it locally.
+
+### From source (external vendors)
+
+```bash
+git clone https://github.com/opvs-ai/opvsHUB.git
+cd opvsHUB/cli
+npm install
+npm run build
+npm link          # makes `opvs-skills` available globally
+opvs-skills --help
+```
+
+The repo also ships a pre-built `dist/` so if you only want to run the CLI
+(not patch it), you can skip the TypeScript build:
+
+```bash
+cd opvsHUB/cli
+npm install --omit=dev
+node dist/cli.js --help
+```
+
+### Runtime helpers (REQUIRED)
+
+The generator emits this import at the top of every bundle it produces:
+
+```ts
+import { EntitlementStore, wrapApiForEntitlements } from "./entitlements.js";
+```
+
+`entitlements.ts` is hand-authored — the CLI does NOT generate it. Copy it
+from `opvsHUB/cli/runtime-helpers/` alongside your generated bundle, or your
+gateway fails with `Cannot find module './entitlements.js'` and registers
+zero skills.
+
+```bash
+cp opvsHUB/cli/runtime-helpers/entitlements.ts /path/to/your/bundle/
+```
+
+Two more helpers (`ca-cache.ts` for cert-pinned tool calls, `doctor.ts` for
+install health checks) sit alongside. Copy them too if your generated bundle
+imports them — `grep -E "ca-cache|doctor" /path/to/your/bundle/index.ts`
+to check.
+
+The contract for each helper is in
+[`opvsHUB/cli/runtime-helpers/README.md`](https://github.com/opvs-ai/opvsHUB/blob/main/cli/runtime-helpers/README.md).
+
+### Source of truth + sync cadence
+
+The internal OPVS monorepo at `opvs-ai/OPVS` (private) is the upstream. The
+`opvsHUB/cli/` mirror tracks the latest minor release published as
+`@opvs-ai/skills@0.4.x`. The mirror's `package.json` `version` field reflects
+the last sync. If you need a patch faster than the sync cadence, fork
+`opvs-ai/opvsHUB`, edit `cli/src/`, run `npm run build`, and deploy the
+patched bundle — or open a PR against `opvsHUB` and the change cherry-picks
+upstream on the next sync.
+
+---
+
 ## The 4-layer format
 
 The canonical spec is
@@ -579,6 +643,117 @@ print('OK')
 `description:` is the runtime trigger. The registry rejects packages with a
 description shorter than a usable trigger sentence.
 
+### 6. (Optional) Bundle-attached security review
+
+Before the real `opvs-skills publish`, you can pre-flight the 7-check
+security pipeline locally by POSTing your manifest **and** the candidate
+tarball to the standalone review endpoint. This is the closest thing to a
+real publish dry-run for the bundle-aware checks (`required_docs`,
+`blocklist`).
+
+```bash
+# 1. Run a publish dry-run to produce the signed tarball locally.
+#    Tarball lands in /tmp/opvs-publish-<rand>/.
+opvs-skills publish . --private-key /path/to/key.b64 \
+    --api-url https://market.opvs.ai --dry-run
+
+# 2. Encode the tarball + post it for review.
+TARBALL=$(ls /tmp/opvs-publish-*/<vendor>-<name>-<version>.tgz | tail -1)
+DIGEST=$(sha256sum "$TARBALL" | cut -d' ' -f1)
+python3 -c "
+import base64, json, yaml
+m = yaml.safe_load(open('package.yaml'))
+t = base64.b64encode(open('$TARBALL','rb').read()).decode()
+json.dump({'manifest': m, 'signature': m['signature'],
+          'bundle_sha256': '$DIGEST',
+          'bundle_tarball_b64': t}, open('/tmp/body.json','w'))
+"
+curl -s -X POST https://market.opvs.ai/api/v1/security/review \
+  -H "X-Tenant-ID: <your-tenant-uuid>" \
+  -H "X-Admin-Key: $MARKETPLACE_API_SECRET_KEY" \
+  -H "Content-Type: application/json" -d @/tmp/body.json | jq .
+```
+
+Expected verdict: 2 placeholder findings on `signature` + `cert_fingerprint`
+(these are injected at real-publish time and resolve to valid values), plus
+optional warning on `LEARNINGS.md` for non-verified tiers.
+
+`bundle_tarball_b64` is OPTIONAL. The **live** publish path
+(`opvs-skills publish` without `--dry-run`) calls `security_review` with the
+manifest only — so any bundle-content findings the standalone endpoint
+flags will NOT block your real publish. Bundle-aware checks become blocking
+only at verified-tier promotion (Phase 2). Treat the standalone endpoint as
+an early-warning tool, not a hard gate.
+
+---
+
+## End-to-end publish recipe
+
+Once the local validators are green:
+
+```bash
+# 1. Real publish. Tarball PUTs to R2, registry insert runs the live
+#    7-check review (manifest-only pass), inserts the registry row.
+cd /path/to/your-package
+export OPVS_PARTNER_KEY=opvs_pk_...      # vendor admin key minted by OPVS ops
+opvs-skills publish . \
+    --private-key /path/to/key.b64 \
+    --api-url https://market.opvs.ai \
+    --admin-key $OPVS_PARTNER_KEY
+
+# Output:
+#   PUBLISHED — @<vendor>/<name>@<version>
+#     sha256: <hex>
+#     bundle: https://bundles.opvs.ai/<vendor>/<name>/<version>.tgz
+#     score:  100
+```
+
+```bash
+# 2. Verify the bundle URL serves your tarball + the registry has the row.
+curl -sL "https://bundles.opvs.ai/<vendor>/<name>/<version>.tgz" \
+    | tar tz | head    # confirm the 4-layer dirs are in the tree
+
+curl -s "https://market.opvs.ai/api/v1/registry/packages/<vendor>/<name>" \
+    | jq '.versions[] | {version, tier, security_score, created_at}'
+```
+
+```bash
+# 3. (Brand-side) Install into your brand workspace and confirm the
+#    extract preserves the directory structure.
+curl -X POST "https://market.opvs.ai/api/v1/marketplace/packages/<package_id>/install" \
+    -H "X-Admin-Key: $ADMIN_API_KEY" -H "X-Brand-ID: <brand-id>" \
+    -d '{}'
+
+# After install, the package files live under your brand's workspace
+# with references/, learnings/<id>/, registry/<item>/ all intact.
+```
+
+A freshly-published version defaults to `tier=internal` — hidden from
+customer browse. Have an OPVS operator PATCH `tier=beta` to make it
+visible. The promotion endpoint, the full vendor-cert mint flow, and the
+revocation recipe live in
+[`DEPLOYMENT.md`](https://github.com/opvs-ai/OPVS/blob/main/docs/planning/opvsHUB/Marketplace/DEPLOYMENT.md)
+in the OPVS repo.
+
+### What runs at runtime
+
+After install, two distinct things happen each time an agent hits your
+skill:
+
+- **Envelope synthesis is server-side.** The OPVS api-gateway proxy reads
+  your `guidance:` block from `client/schema.yaml` and decorates every
+  response with `_guidance`, `telemetry_signal`, and (when
+  `X-OPVS-Audit-Level: all`) `_findings`. You write no runtime code for
+  this — the proxy emits the envelope from your schema.
+- **The 4-layer files live on disk in the brand workspace.** When an agent
+  reads `SKILL.md`'s decision tree and decides to drill in, it opens the
+  corresponding `references/*.md`, `learnings/<id>/metadata.json`, or
+  `registry/<item>/registry-item.json` directly from the filesystem. No
+  API call. No round-trip. Just file reads.
+
+Both surfaces are loaded from one install. One signed tarball, two
+distinct runtime behaviours.
+
 ---
 
 ## Package metadata
@@ -670,6 +845,19 @@ package.
 Be explicit. If you take textual search input under any param name, alias it.
 If you don't, omit the field — but don't ship it implicit.
 
+### 4. Forgetting to copy `entitlements.ts` alongside the bundle
+
+The generated bundle starts with
+`import { ... } from "./entitlements.js"`. If you ship the generated
+`index.ts` without copying `opvsHUB/cli/runtime-helpers/entitlements.ts` to
+the same directory, your gateway boots clean and registers **zero** skills
+— the import resolves to `Cannot find module`. Easy to miss because the
+generator doesn't warn.
+
+**Mitigation:** add the helpers copy to your deploy script, right next to
+the bundle install step. See [Getting the CLI](#getting-the-cli) above for
+the contract.
+
 ---
 
 ## FAQ
@@ -713,6 +901,19 @@ No. The security review's required-docs check is for repo-root files:
 at repo root is a vendor-level summary. `learnings/` directories inside each
 skill are the structured KI shape — separate concern, not interchangeable.
 
+**Do I have to use `@opvs-ai/skills` from Verdaccio, or can I build the CLI
+myself?**
+External vendors install from source — clone `opvs-ai/opvsHUB`, build
+`cli/`, link locally. The Verdaccio binary at `https://npm.opvs.ai` is
+internal-only. See [Getting the CLI](#getting-the-cli).
+
+**What's in `cli/runtime-helpers/`? Do I have to copy all three?**
+Three hand-authored helpers the generator's output imports at runtime:
+`entitlements.ts` is required (every bundle imports it), `ca-cache.ts` is
+required only if your bundle uses cert-pinned tool calls, and `doctor.ts`
+is required only if your bundle imports the doctor helper. `grep -E
+"ca-cache|doctor" /path/to/your/bundle/index.ts` tells you which apply.
+
 ---
 
 ## See also
@@ -731,4 +932,8 @@ skill are the structured KI shape — separate concern, not interchangeable.
   [`registry-item.schema.json`](https://github.com/opvs-ai/OPVS/blob/main/docs/planning/opvsHUB/architecture/registry-item.schema.json)
 - Lighthouse worked example:
   [`agentboard` skill folder](https://github.com/opvs-ai/OPVS/tree/main/apps/spideragent/packages/shared/skills/agentboard)
+- Factory CLI source mirror:
+  [`opvs-ai/opvsHUB/cli/`](https://github.com/opvs-ai/opvsHUB/tree/main/cli)
+- Marketplace deploy + verified publish recipe:
+  [`DEPLOYMENT.md`](https://github.com/opvs-ai/OPVS/blob/main/docs/planning/opvsHUB/Marketplace/DEPLOYMENT.md)
 - Third-party reference: [HeyGen Hyperframes](https://github.com/heygen-com/hyperframes)
