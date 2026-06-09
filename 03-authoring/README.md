@@ -12,6 +12,7 @@ This section walks through the anatomy of a skill, the on-demand contract every 
 - [the-contract.md](the-contract.md) — pointer to the canonical on-demand contract spec in `opvs-ai/marketplace`, with a short summary of the four locked rules
 - [validation-preflight.md](validation-preflight.md) — running `opvs-skills generate`, `validate`, and `publish --dry-run` locally, plus the non-negotiable end-to-end LLM completion check
 - [common-gotchas.md](common-gotchas.md) — eight greatest-hits mistakes: tool-name regex, `requires.env` blocking resolution, `config.yaml`/`moltbot.json` drift, and more
+- [quality-and-enforcement.md](quality-and-enforcement.md) — the craft: enforcement-in-tooling, verbatim-paste verification, tables-vs-prose, MUST/should rigor, HARD-GATE, and where OPVS skills go beyond Hyperframes. **Read this if you want skills that actually hold up.**
 
 ## Reading order
 

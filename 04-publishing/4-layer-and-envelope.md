@@ -7,6 +7,11 @@ from — without you writing custom runtime code per skill.
 
 > If you only ship one of the two, your skill is half-built. Read on.
 
+> **For the craft** — how to make these layers actually hold up under
+> ship-pressure (enforcement-in-tooling, tables-vs-prose, HARD-GATE, and where
+> OPVS beats Hyperframes) — read
+> [../03-authoring/quality-and-enforcement.md](../03-authoring/quality-and-enforcement.md).
+
 ---
 
 ## TL;DR
