@@ -12,10 +12,10 @@ Each step is a separate page. Versioning and revocation are also covered here, b
 
 ## Pages
 
-- [packaging.md](packaging.md) — `package.yaml` manifest, the standard package layout, the tarball
+- [packaging.md](packaging.md) — `package.yaml` manifest field-by-field, the standard package layout, skill IDs, peer dependencies, what's in vs out of the tarball
 - [signing-and-submit.md](signing-and-submit.md) — ed25519 sign, `opvs-skills publish`, what the registry does on receive
 - [security-review.md](security-review.md) — the seven static checks the registry runs before accepting your bundle
-- [versioning.md](versioning.md) — semver, peer dependencies, deprecating old versions
+- [versioning.md](versioning.md) — semver, peer-dependency pinning, tier transitions, how brands pin a version (and the truth about deprecation today)
 - [revocation.md](revocation.md) — pulling a published version after a bug or security finding
 - [4-layer-and-envelope.md](4-layer-and-envelope.md) — how to ship the 4-layer skill format together with the on-demand envelope contract in one signed package (unblocks SpiderIQ + Di-Atomic and any third-party vendor)
 
