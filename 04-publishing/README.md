@@ -17,6 +17,7 @@ Each step is a separate page. Versioning and revocation are also covered here, b
 - [security-review.md](security-review.md) — the seven static checks the registry runs before accepting your bundle
 - [versioning.md](versioning.md) — semver, peer-dependency pinning, tier transitions, how brands pin a version (and the truth about deprecation today)
 - [revocation.md](revocation.md) — pulling a published version after a bug or security finding
+- [must-upgrade.md](must-upgrade.md) — forcing every brand off a bad version onto your fix (the forward-moving counterpart to revoke)
 - [4-layer-and-envelope.md](4-layer-and-envelope.md) — how to ship the 4-layer skill format together with the on-demand envelope contract in one signed package (unblocks SpiderIQ + Di-Atomic and any third-party vendor)
 
 ## What's next
