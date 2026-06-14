@@ -5,6 +5,12 @@ term has a page of its own, the link points there.
 
 ---
 
+**`auto_update_log`** — the append-only audit table behind every auto-update,
+one row per version bump. Records `from_version`, `to_version`, `trigger`
+(`cron` | `gateway-boot` | `must-upgrade` | `manual`), the pin at the time, and
+any entitlements the bump added. 90-day retention, purged nightly. See
+[../04-publishing/must-upgrade.md](../04-publishing/must-upgrade.md).
+
 **Brand** — a tenant on OPVS. Skills are installed *per brand*, and entitlements
 + credentials are granted per brand. A brand pins the package version it
 installed; nothing auto-upgrades it. See
@@ -73,6 +79,12 @@ wins over the manifest at the UI. See
 $bundle"). Valid; a package with none of the three is rejected. See
 [../04-publishing/packaging.md § Peer dependencies](../04-publishing/packaging.md#section-4--peer-dependencies).
 
+**MUST_UPGRADE** — a vendor flag that forces every brand off a bad version on the
+next auto-update pass, overriding even an exact pin. One call with a mandatory
+`reason`; auto-grants any new required entitlements; audited. The forward-moving
+counterpart to revoke — it *carries* brands to your fix instead of breaking them.
+See [../04-publishing/must-upgrade.md](../04-publishing/must-upgrade.md).
+
 **Package** — a versioned, signed bundle of one or more skills under your vendor
 scope, named `@vendor/slug`.
 
@@ -134,6 +146,13 @@ verified`. Controls visibility and badging. `internal` hides, `beta` lists. See
 `@opvs-ai`, `@di-atomic`). Everything you publish lives under it; your
 entitlements use the `vendor.<you>.<surface>.<verb>` form. See
 [../01-onboarding/](../01-onboarding/).
+
+**Version pin** — the npm-style string on every install that sets how fast it
+auto-updates: `1.0.0` (exact — never auto-bump), `~1.0.0` (patch-only),
+`^1.0.0` (semver-compatible, same major), or `latest` (newest published). New
+installs default to `latest`; the auto-update poller upgrades each install to the
+newest version its pin allows. MUST_UPGRADE overrides the pin. See
+[../04-publishing/versioning.md](../04-publishing/versioning.md).
 
 ---
 
