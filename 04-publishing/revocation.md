@@ -52,6 +52,15 @@ revoke. Publish the new version, announce it, and let brands move at their own
 pace (they reinstall to pick it up). Revocation is for "get off this now," not
 "please upgrade."
 
+**Revoke vs. MUST_UPGRADE.** Revoke *stops* brands — they break and must
+reinstall by hand. [MUST_UPGRADE](must-upgrade.md) *carries* them — on the next
+auto-update pass every install on the bad version is force-moved forward to the
+newest version their pin allows, with no breakage. The deciding question is
+whether a safe version exists to move brands *to*. If yes, and running the bad
+one a little longer is tolerable, prefer MUST_UPGRADE. Reach for revoke only when
+there's no safe landing spot, or when running the bad version even briefly is
+unacceptable.
+
 ---
 
 ## Section 3 — Who can revoke
@@ -151,6 +160,8 @@ revoke first and scramble for a fix while brands are down.
 
 ## See also
 
+- [must-upgrade.md](must-upgrade.md) — the *soft* forced retire: carry brands
+  forward to a fix instead of breaking them.
 - [versioning.md](versioning.md) — why versions are immutable; publish-new as
   the soft alternative to revoke.
 - [../05-editing-and-versioning/deprecation.md](../05-editing-and-versioning/deprecation.md)
