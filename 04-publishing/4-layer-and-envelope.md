@@ -733,10 +733,14 @@ curl -X POST "https://market.opvs.ai/api/v1/marketplace/packages/<package_id>/in
 # with references/, learnings/<id>/, registry/<item>/ all intact.
 ```
 
-A freshly-published version defaults to `tier=internal` — hidden from
-customer browse. Have an OPVS operator PATCH `tier=beta` to make it
-visible. The promotion endpoint, the full vendor-cert mint flow, and the
-revocation recipe live in
+A freshly-published version defaults to `tier=beta` — **customer-visible in
+the browse immediately.** The tier is your decision: whatever your manifest
+declares is honored verbatim, no OPVS operator ever flips it, and there is
+**no promotion step.** Set `tier=internal` only for a deliberate hidden test
+cut; to make it visible, publish a new version declaring `beta` (or just omit
+`tier`). `opvs-skills publish` prints a `HIDDEN` warning if you ship
+`internal` so you don't do it by accident. The full vendor-cert mint flow and
+the revocation recipe live in
 [`DEPLOYMENT.md`](https://github.com/opvs-ai/OPVS/blob/main/docs/planning/opvsHUB/Marketplace/DEPLOYMENT.md)
 in the OPVS repo.
 

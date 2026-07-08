@@ -101,17 +101,21 @@ tier, and they can differ across the version history of one package.
 
 | Tier | Visibility |
 |---|---|
-| `internal` | hidden from the customer marketplace browse |
-| `beta` | visible + installable (where every live `@opvs-ai` / `@spideriq` package sits) |
+| `beta` (default) | visible + installable (where every live `@opvs-ai` / `@spideriq` package sits) |
+| `internal` | hidden from the customer marketplace browse — a deliberate test tier |
 | `community` | community-contributed |
 | `verified` | formal OPVS-team vetting |
 
-A common path: ship `0.1.0` as `internal` to test it privately, then publish
-`0.1.1` as `beta` to make it visible. Each new version inherits the tier **you
-declare in its manifest** — there's no automatic promotion. Moving an existing
-published version to a higher tier (e.g. requesting `verified`) goes through the
-promotion flow, not a republish; see [../06-promotion](../06-promotion/) and
-[security-review.md](security-review.md).
+**The tier is your decision, and the default is `beta` — omit `tier` and your
+package is customer-visible on publish.** Whatever your manifest declares is
+honored verbatim; the platform never overrides it and there is **no promotion
+step** — no OPVS operator flips your tier. Set `tier: internal` only when you
+want a deliberate hidden cut to test privately first; to make it visible,
+publish a new version declaring `beta` (or omit `tier`). Each version inherits
+exactly the tier its own manifest declares. (Requesting `verified` — Phase 2 —
+is a separate human-vetting step over an already-visible package, not a way to
+un-hide an `internal` one; see [../06-promotion](../06-promotion/) and
+[security-review.md](security-review.md).)
 
 ---
 
@@ -145,11 +149,16 @@ The history shows the patterns above in practice:
 | Version | Date | Tier | What it shows |
 |---|---|---|---|
 | `0.1.0` | 2026-05-25 | `internal` | first publish, kept private for testing |
-| `0.1.1` | 2026-05-26 | `beta` | promoted to visible by republishing at a new version |
+| `0.1.1` | 2026-05-26 | `beta` | made visible by republishing at a new version |
 | `0.1.2` | 2026-05-26 | `beta` | patch — fix, no surface change |
 | `0.2.0` | 2026-05-26 | `beta` | minor — additive surface |
 | `0.3.0` | 2026-05-26 | `beta` | minor — more surface |
 | `0.4.0` | 2026-05-27 | `beta` | current latest |
+
+> Note: this history starts at `internal` because spiderflows shipped before
+> the default became `beta`. Today you'd just publish `0.1.0` at `beta` (the
+> default) and be visible from the first version — the `internal` first cut is
+> optional, only for a deliberate private test.
 
 Two things to read out of this:
 
