@@ -329,6 +329,70 @@ methods:
       format: yaml
 ```
 
+### Nested object & array params
+
+A param can be a structured `object` (with sub-fields) or an `array` of
+objects. Declare the full shape inline — you no longer describe an object's
+sub-fields in prose in the `description`. When you declare the structure, every
+code generator (gateway plugin, SDK, MCP, OpenAPI) emits the full nested JSON
+Schema, and `skill_describe` shows the sub-fields to agents.
+
+```yaml
+methods:
+  runWorkflow:
+    description: Run a workflow.
+    http: POST /workflows/run
+    params:
+      workflow:                     # an object with nested sub-fields
+        type: object
+        required: true
+        description: The workflow to run.
+        properties:
+          smartlead:
+            type: object
+            description: Smartlead connection settings.
+            properties:
+              connection_id:
+                type: string
+                required: true      # per-node required — NOT a sibling `required: []`
+                description: Smartlead account connection ID.
+      admin_regions:                # an array of objects
+        type: array
+        description: Regions to target.
+        items:
+          type: object
+          properties:
+            country:
+              type: string
+              required: true
+              description: ISO country code.
+            cities:
+              type: array
+              items: string         # legacy shorthand: primitive element type
+```
+
+Four rules govern nested params:
+
+- **Per-node `required`.** Each sub-field carries its own `required: bool`,
+  exactly like a top-level param. There is **no** sibling `required: [names]`
+  array — the generators build that from the per-node flags.
+- **`items` is a type name OR an object.** For an array of primitives use the
+  shorthand (`items: string`); for an array of objects give `items` a full
+  object spec with its own `properties`.
+- **Validation reaches every level.** The `enum` → `values` and
+  `required` → `description` checks run at every depth, reporting a dotted path
+  (`runWorkflow.workflow.smartlead.connection_id`). Nesting is capped at **12
+  levels** — deeper fails loud (a cycle/runaway guard), never silently trimmed.
+- **`oneOf` / `allOf` / `anyOf` / `$ref` pass through but are not validated.**
+  They survive into the generated schema verbatim; v1 does not deep-validate
+  them. Use them as an escape hatch — if the shape matters, model it with
+  `properties`/`items` instead.
+
+Declaring a schema never restricts what you may send: undeclared sub-keys still
+pass through to your upstream verbatim, and a declared-but-mismatched key emits
+warn-only telemetry — never a reject or strip. Adding a schema to an existing
+method can't break a live caller.
+
 ### What the gateway does with it
 
 When a method returns, the gateway proxy synthesises three siblings on the
