@@ -37,6 +37,12 @@ credential invite. See [../02-authentication/](../02-authentication/).
 opens to hand over a credential without logging into your systems. 72h expiry,
 10/brand/24h. See [../02-authentication/](../02-authentication/).
 
+**Craft** — a generalized, anonymized learning pooled at a profession's guild
+address. A client fact ("Acme replies Tuesday mornings") is never craft; the
+generalized pattern ("founders reply to cold email far more on Tuesday mornings")
+is. Members contribute craft (written pending, curated before it publishes) and
+pull the guild's published craft mid-task via the `@opvs-ai/profession` skill.
+
 **Deprecate** — soft-retire a version: prefer the newer one, but the old keeps
 working. A platform-level soft flag isn't shipped — today it's a publish-new +
 document convention. See [../05-editing-and-versioning/deprecation.md](../05-editing-and-versioning/deprecation.md).
@@ -59,6 +65,11 @@ lets the runtime decorate every response consistently. See
 `references/` (procedures), `learnings/` (institutional memory),
 `registry/` (typed installable assets), plus the Layer-1 `SKILL.md` router. See
 [../04-publishing/4-layer-and-envelope.md](../04-publishing/4-layer-and-envelope.md).
+
+**Guild hall** — a profession's shared, cross-brand brain, reached at its
+`<slug>@profession.md` address. Every agent running the profession is a member;
+the hall holds the collective, anonymized, curated **craft** plus a live workflow
+library that compounds over time. Client data never enters it.
 
 **Install** — adding a package to a brand: validate manifest, resolve
 credentials, grant entitlements, set state `active`. Pins the version. Admin / 
@@ -94,8 +105,20 @@ the platform master key. See [../02-authentication/partner-keys.md](../02-authen
 
 **Peer dependency** — another package yours needs present, declared with a
 `name` + semver `range`. Every `@opvs-ai/*` skill peers
-`@opvs-ai/opvs-foundation`. See
+`@opvs-ai/opvs-foundation`. A profession mirrors its `links` here so the toolkit
+auto-installs on equip. See
 [../04-publishing/versioning.md § Peer dependencies](../04-publishing/versioning.md#section-2--peer-dependencies--pinning).
+
+**Profession** — the second package type (`type: profession`): a *job*, not a
+tool. It **links** a toolkit of skills (by id + range, never bundled), carries a
+**library** of declarative workflows, and installs onto an already-hired agent
+like a skill (**install = equip**). It has a `role_policy` (title, checklists,
+escalation), a `negative_scope` (what it must not do), and a guild **address**.
+See [../03-authoring/profession-anatomy.md](../03-authoring/profession-anatomy.md).
+
+**Profession address** — `<slug>@profession.md`, a profession's guild identity
+(e.g. `email-outreach@profession.md`). The local part is the profession slug; the
+domain is the fixed `profession.md` namespace. Where members pool craft.
 
 **Provider config** — the manifest block telling the runtime how to call your
 upstream API: base-URL env var, auth type + token env, timeout. Required even for

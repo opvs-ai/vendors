@@ -14,7 +14,7 @@ Each step is a separate page. Versioning and revocation are also covered here, b
 
 - [packaging.md](packaging.md) — `package.yaml` manifest field-by-field, the standard package layout, skill IDs, peer dependencies, what's in vs out of the tarball
 - [signing-and-submit.md](signing-and-submit.md) — ed25519 sign, `opvs-skills publish`, what the registry does on receive
-- [security-review.md](security-review.md) — the seven static checks the registry runs before accepting your bundle
+- [security-review.md](security-review.md) — the seven static checks the registry runs before accepting your bundle. A `type: profession` package runs one extra coherence check (substanceless / dangling link / missing or unparseable workflow) — see [../03-authoring/profession-anatomy.md § The coherence check](../03-authoring/profession-anatomy.md#the-coherence-check--what-gets-rejected)
 - [versioning.md](versioning.md) — semver, peer-dependency pinning, tier transitions, how brands pin a version (and the truth about deprecation today)
 - [revocation.md](revocation.md) — pulling a published version after a bug or security finding
 - [must-upgrade.md](must-upgrade.md) — forcing every brand off a bad version onto your fix (the forward-moving counterpart to revoke)

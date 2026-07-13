@@ -1,14 +1,17 @@
 # 03. Authoring
 
-You're authenticated. Now you actually write a skill.
+You're authenticated. Now you actually write a skill — or a profession.
 
 A "skill" on OPVS is a small set of files that tell the platform what your skill does, what tools it exposes, and what it needs to run. The two files that matter most are `SKILL.md` (decision guidance for agents) and `schema.yaml` (the API contract that drives codegen).
+
+A **profession** is the second package type: a *job* rather than a tool. It links a toolkit of skills, carries a library of workflows, and equips a hired agent with a whole role. Same CLI, same signing, same review — see [profession-anatomy.md](profession-anatomy.md).
 
 This section walks through the anatomy of a skill, the on-demand contract every skill follows, how to validate locally before you submit, and the gotchas that catch first-time authors.
 
 ## Pages
 
 - [skill-anatomy.md](skill-anatomy.md) — `SKILL.md` + `schema.yaml` shape, what each field means, a worked example pointing at the agentboard blueprint
+- [profession-anatomy.md](profession-anatomy.md) — the **second package type**: `type: profession` + the `profession` block (links, workflows, role policy, address). Publish a *job*, not just a tool
 - [the-contract.md](the-contract.md) — pointer to the canonical on-demand contract spec in `opvs-ai/marketplace`, with a short summary of the four locked rules
 - [validation-preflight.md](validation-preflight.md) — running `opvs-skills generate`, `validate`, and `publish --dry-run` locally, plus the non-negotiable end-to-end LLM completion check
 - [common-gotchas.md](common-gotchas.md) — eight greatest-hits mistakes: tool-name regex, `requires.env` blocking resolution, `config.yaml`/`moltbot.json` drift, and more
