@@ -39,6 +39,7 @@ Start at [01-onboarding/](01-onboarding/) and walk forward. Each section landing
 - [04-publishing/](04-publishing/) — how to ship
 - [05-editing-and-versioning/](05-editing-and-versioning/) — life after publish
 - [06-promotion/](06-promotion/) — make people find your work
+- [07-harvest/](07-harvest/) — learn from real usage and improve your skill
 - [reference/](reference/) — API, CLI, glossary
 
 ## Status
