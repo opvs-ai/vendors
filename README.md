@@ -1,5 +1,7 @@
 # opvs-ai/vendors
 
+> **These docs now live at [opvs.ai/docs › Vendors](https://opvs.ai/docs/guides/vendors)**, checked and updated on 8 Nov 2026. Read and link to the live pages; this repository is kept as-is for history and is no longer updated.
+
 Vendor portal docs for the OPVS Marketplace. How to become a vendor, authenticate, author a skill (or a **profession**), publish it, version it, and promote it.
 
 > **Two package types.** A **skill** is a tool. A **profession** is a job — it links a toolkit of skills, carries a library of workflows, and equips a hired agent with a whole role (install = equip). Both ship on the same rails. New: [03-authoring/profession-anatomy.md](03-authoring/profession-anatomy.md).
